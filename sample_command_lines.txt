@@ -1,0 +1,10 @@
+ImageReconstruction2024v5 xxni00001-112.img 139 176 l 2.5 5 0.0287 0.287 b 0.5 k 0.5 0.5 1
+ImageReconstruction2024v6 xxni00001-112.img 139 176 k 0.5 0.5 1 l
+ImageReconstruction2025v1 xxni00001-112.img 139 176 l 2.5 5 0.0287 0.287 b 0.5 k 0.5 0.5 1 0.8
+ImageReconstruction2025v2 xxni00001-112.img 139 176 k 0.5 0.5 1 0.8 l
+kSpaceBesselFilter2024 xxni00001-112.img 139 176 l 2.7 5 0.0017 0.17
+kSpaceButterworthFilter2024 xxni00001-112.img 139 176 l 2.7 3 0.5 0.0017 0.17
+kSpaceChebyshevFilter2024 xxni00001-112.img 139 176 l 2.55 6 0.0017 0.17
+ZSpaceBesselFilter2024 xxni00001-112.img 139 176 l 2.5 0.5 0.5 4 0.054 0.154
+ZSpaceButterworthFilter2024 xxni00001-112.img 139 176 l 2.65 0.5 0.5 7 0.5 0.017 0.17
+ZSpaceChebyshevFilter2024 xxni00001-112.img 139 176 l 2.55 0.5 0.5 6 0.017 0.17
