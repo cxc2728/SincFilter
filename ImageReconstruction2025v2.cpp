@@ -205,6 +205,15 @@ int main(int argc, char* argv[]) {
 
 			char filterType = *argv[9];
 
+
+			if ((double)Sinc_SamplingRate < 1.0 || (double)Sinc_SamplingRate > 3.0)
+			{
+
+				std::cout << "Enter the Sampling Rate the Sinc function (double) in: [1.0, 3.0]" << endl;
+				exit(0);
+
+			}
+
 			if ((int)m_angles < 1 || (int)m_angles > 10)
 			{
 
