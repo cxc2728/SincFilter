@@ -16,7 +16,6 @@
 using namespace std;
 
 unsigned char filterType = 'l';
-const double z_f = 0.1;
 #define ft_SCALE 1;
 unsigned char kz = 'k';
 const double ft_SCALE_z = 1.0;
@@ -24,7 +23,7 @@ const double ft_SCALE_z = 1.0;
 void OnInverseFourierTransformTransferFunctionKspace(int rcyres, int rcxres);
 void OnInverseZTransformTransferFunction(int rcyres, int rcxres, double m_Real, double m_Imaginary);
 
-void OnFrequencyDomain(char filterType, char kz, char imageFilename[], int rcxres, int rcyres, double m_Real, double m_Imaginary, int m_angles, double Sinc_SamplingRate);
+void OnFrequencyDomain(char filterType, char kz, char imageFilename[], int rcxres, int rcyres, double m_Real, double m_Imaginary, int m_angles, double Sinc_SamplingRate, double z_f);
 
 // declare a class by the name 'ImageReconstruction2024'
 class ImageReconstruction2024 {
@@ -143,7 +142,7 @@ int main(int argc, char* argv[]) {
 	FILE* savedata;
 
 	// tell the user of the list of input parameters necessary to tun the program:
-	if (argc < 10) {
+	if (argc < 11) {
 
 		std::cout << endl;
 		std::cout << "Please type the image file name" << endl;
@@ -157,12 +156,15 @@ int main(int argc, char* argv[]) {
 
 		std::cout << "Enter the number of angles used to calculate the SincFilter (int) [1, 10]" << endl;
 
-		std::cout << "The Sampling Rate the Sinc function (double) in: [1.0, 3.0]" << endl;
+		std::cout << "The Sampling Rate the Sinc function (double) in: [0.8, 3.0]" << endl;
 
 		std::cout << "Enter 'l' to calculate LPF or 'h' to calculate HPF" << endl;
 
-		std::cout << "Example parameters for LPF: k 0.5 0.5 5 0.8 l" << endl;
-		std::cout << "Example parameters for HPF: k 0.5 0.5 5 0.8 h" << endl;
+		std::cout << "Enter the value of z_f for the Whittaker-Shannon" << endl;
+		std::cout << "formula (double) in: [0.1, 1.0]" << endl;
+
+		std::cout << "Example parameters for LPF: k 0.5 0.5 5 0.8 l 0.1" << endl;
+		std::cout << "Example parameters for HPF: k 0.5 0.5 5 0.8 h 0.1" << endl;
 		std::cout << endl;
 		exit(0);
 	}
@@ -205,14 +207,7 @@ int main(int argc, char* argv[]) {
 
 			char filterType = *argv[9];
 
-
-			if ((double)Sinc_SamplingRate < 1.0 || (double)Sinc_SamplingRate > 3.0)
-			{
-
-				std::cout << "Enter the Sampling Rate the Sinc function (double) in: [1.0, 3.0]" << endl;
-				exit(0);
-
-			}
+			double z_f = atof(argv[10]);
 
 			if ((int)m_angles < 1 || (int)m_angles > 10)
 			{
@@ -248,6 +243,15 @@ int main(int argc, char* argv[]) {
 
 			}
 
+			if (z_f < (double)0.1 || z_f >(double) 1.0)
+			{
+
+				std::cout << "Enter the value of z_f for the Whittaker-Shannon" << endl;
+				std::cout << "formula (double) in: [0.1, 1.0]" << endl;
+				exit(0);
+
+			}
+
 			// inform the user of the image size 
 			// (number of rows and number of columns
 			// of the matrix containing the image)
@@ -258,6 +262,7 @@ int main(int argc, char* argv[]) {
 			std::cout << "The value of m_Imaginary is: " << m_Imaginary << endl;
 			std::cout << "The value of m_angles is: " << m_angles << endl;
 			std::cout << "The Sampling Rate of the Sinc function is: " << Sinc_SamplingRate << endl;
+			std::cout << "The value of z_f is: " << z_f << endl;
 
 			double pi = 3.141592;
 			double Zphase = (double)2.0 * pi * atan2((double)m_Imaginary, (double)m_Real) / (n1 * n2);
@@ -278,7 +283,8 @@ int main(int argc, char* argv[]) {
 			fprintf(savedata, "%s%lf\n", "The phase of the Complex number is: ", Zphase);
 			fprintf(savedata, "%s%d\n", "The value of m_angles is set to: ", m_angles);
 			fprintf(savedata, "%s%lf\n", "The Sampling Rate of the Sinc function is: ", Sinc_SamplingRate);
-			
+			fprintf(savedata, "%s%lf\n", "The value of z_f is: " , z_f);
+
 			fprintf(savedata, "%s%c\n", "The filter is: ", filterType);
 
 			if (tolower(filterType) == 'l')
@@ -302,7 +308,7 @@ int main(int argc, char* argv[]) {
 			// to the method 'allocateData()'
 			ImageReconstruction.allocateData();
 
-			OnFrequencyDomain(filterType, kz, imageFileName, n1, n2, m_Real, m_Imaginary, m_angles, Sinc_SamplingRate);
+			OnFrequencyDomain(filterType, kz, imageFileName, n1, n2, m_Real, m_Imaginary, m_angles, Sinc_SamplingRate, z_f);
 
 			// invT (begin)
 			if (tolower(kz) == 'k')
@@ -351,7 +357,7 @@ int main(int argc, char* argv[]) {
 } // end of main 
 
 
-void OnFrequencyDomain(char filterType, char kz, char imageFilename[], int rcxres, int rcyres, double m_Real, double m_Imaginary, int m_angles, double Sinc_SamplingRate)
+void OnFrequencyDomain(char filterType, char kz, char imageFilename[], int rcxres, int rcyres, double m_Real, double m_Imaginary, int m_angles, double Sinc_SamplingRate, double z_f)
 {
 
 	int NofXpixels = rcxres;
@@ -373,7 +379,7 @@ void OnFrequencyDomain(char filterType, char kz, char imageFilename[], int rcxre
 
 	FILE* logfile;
 
-	char logfilename[128] = "ImageReconstruction2024.log";
+	char logfilename[128] = "OnFrequencyDomain.log";
 
 	if ((logfile = fopen(logfilename, "w+")) == NULL)
 	{
